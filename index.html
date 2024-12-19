@@ -37,7 +37,6 @@
         #result {
             margin-top: 20px;
             font-size: 20px;
-            font-weight: bold;
         }
     </style>
 </head>
@@ -48,7 +47,7 @@
         <div class="options" id="options"></div>
     </div>
     <div id="result"></div>
-    
+
     <py-script>
         import random
 
@@ -62,8 +61,8 @@
                 answer = num1 - num2
             elif operation == "*":
                 answer = num1 * num2
-            else:
-                while num2 == 0:  # ضمان القسمة على غير صفر
+            else:  # ضمان القسمة على غير صفر
+                while num2 == 0:
                     num2 = random.randint(1, 10)
                 answer = num1 // num2
             return f"{num1} {operation} {num2}", answer
@@ -85,8 +84,9 @@
                 display_question()  # عرض سؤال جديد بعد الإجابة الصحيحة
             else:
                 Element("result").element.innerText = "Wrong! Try again. ❌"  # عرض رسالة الخطأ
+                display_question()  # عرض سؤال جديد بعد الإجابة الخاطئة
 
-        display_question()
+        display_question()  # عرض السؤال الأول عند تحميل الصفحة
     </py-script>
 </body>
 </html>
