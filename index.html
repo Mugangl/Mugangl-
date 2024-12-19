@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mental Abilities Quiz</title>
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f8ff;
+        }
+        h1 {
+            color: #4CAF50;
+            margin-top: 20px;
+        }
+        .question {
+            font-size: 20px;
+            margin: 20px;
+        }
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            background-color: #008cba;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .button:hover {
+            background-color: #005f73;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mental Abilities Quiz</h1>
+    <div id="quiz">
+        <div class="question" id="question">Loading...</div>
+        <div class="options" id="options"></div>
+    </div>
+    <div id="result"></div>
+    
+    <py-script>
+        import random
+
+        def generate_question():
+            num1 = random.randint(1, 10)
+            num2 = random.randint(1, 10)
+            operation = random.choice(["+", "-", "*"])
+            if operation == "+":
+                answer = num1 + num2
+            elif operation == "-":
+                answer = num1 - num2
+            else:
+                answer = num1 * num2
+            return f"{num1} {operation} {num2}", answer
+
+        def display_question():
+            question, correct_answer = generate_question()
+            Element("question").element.innerText = question
+            options = [correct_answer] + [random.randint(1, 100) for _ in range(3)]
+            random.shuffle(options)
+            options_html = "".join(
+                f'<button class="button" onclick="check_answer({option}, {correct_answer})">{option}</button>'
+                for option in options
+            )
+            Element("options").element.innerHTML = options_html
+
+        def check_answer(selected, correct):
+            if selected == correct:
+                Element("result").element.innerText = "Correct! 🎉"
+                display_question()
+            else:
+                Element("result").element.innerText = "Wrong! Try again. ❌"
+
+        display_question()
+    </py-script>
+</body>
+</html>
+import random
+from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
+from kivy.uix.button import Button
+from kivy.uix.togglebutton import ToggleButton
+from kivy.uix.slider import Slider
+from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.graphics import Color, Rectangle
+
+
+class MainMenu(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.selected_difficulty = 1  # المستوى الافتراضي
+        self.selected_time_limit = 5  # الوقت الافتراضي
+        self.high_score = 0  # أعلى سكور
+
+        # التخطيط الرئيسي
+        self.layout = BoxLayout(orientation='vertical', spacing=20, padding=20)
+        self.add_widget(self.layout)
+
+        # إعداد خلفية ملونة تدريجية
+        with self.canvas.before:
+            Color(0.1, 0.1, 0.4, 1)  # اللون الأساسي (أزرق غامق)
+            self.bg_rect = Rectangle(size=self.size, pos=self.pos)
+        self.bind(size=self.update_bg, pos=self.update_bg)
+
+        # العبارة الترحيبية
+        self.welcome_label = Label(
+            text="[b][color=#FFFFFF]🧠 Welcome to Mental Abilities Quiz 🧠[/color][/b]",
+            font_size='30sp',
+            size_hint=(1, 0.2),
+            markup=True,
+            halign="center",
+        )
+        self.layout.add_widget(self.welcome_label)
+
+        # عرض أعلى سكور
+        self.high_score_label = Label(
+            text=f"[b][color=#FFD700]⭐ High Score: {self.high_score} ⭐[/color][/b]",
+            font_size='22sp',
+            size_hint=(1, 0.1),
+            markup=True,
+            halign="center",
+        )
+        self.layout.add_widget(self.high_score_label)
+
+        # اختيار مستوى الصعوبة
+        self.layout.add_widget(Label(text="Choose Difficulty Level:", font_size='20sp', size_hint=(1, 0.1)))
+        difficulty_layout = GridLayout(cols=3, spacing=10, size_hint=(1, 0.2))
+        self.easy_button = ToggleButton(text="Easy (+, -)", group="difficulty", size_hint=(1, 1), state="down")
+        self.easy_button.bind(on_press=self.set_difficulty)
+        difficulty_layout.add_widget(self.easy_button)
+
+        self.medium_button = ToggleButton(text="Medium (×, ÷)", group="difficulty", size_hint=(1, 1))
+        self.medium_button.bind(on_press=self.set_difficulty)
+        difficulty_layout.add_widget(self.medium_button)
+
+        self.hard_button = ToggleButton(text="Hard (Mix)", group="difficulty", size_hint=(1, 1))
+        self.hard_button.bind(on_press=self.set_difficulty)
+        difficulty_layout.add_widget(self.hard_button)
+
+        self.layout.add_widget(difficulty_layout)
+
+        # اختيار مستوى الوقت
+        time_layout = BoxLayout(orientation='vertical', spacing=10, size_hint=(1, 0.3))
+        self.layout.add_widget(Label(text="Set Time Limit:", font_size='20sp', size_hint=(1, 0.1)))
+
+        self.time_label = Label(
+            text="Time Limit: 5 seconds",
+            font_size='18sp',
+            size_hint=(1, 0.1),
+            halign="center",
+        )
+        time_layout.add_widget(self.time_label)
+
+        self.time_slider = Slider(
+            min=1,
+            max=5,  # إضافة خيار "بلا وقت"
+            value=1,
+            step=1,
+            size_hint=(1, 0.7)
+        )
+        self.time_slider.bind(value=self.set_time_limit)
+        time_layout.add_widget(self.time_slider)
+
+        self.layout.add_widget(time_layout)
+
+        # زر "ابدأ اللعب"
+        self.start_button = Button(
+            text="🎮 Start Quiz 🎮",
+            font_size='24sp',
+            size_hint=(1, 0.2),
+            background_color=(0.3, 0.7, 0.3, 1)
+        )
+        self.start_button.bind(on_press=self.start_quiz)
+        self.layout.add_widget(self.start_button)
+
+    def update_bg(self, *args):
+        """تحديث حجم وموقع الخلفية"""
+        self.bg_rect.size = self.size
+        self.bg_rect.pos = self.pos
+
+    def set_difficulty(self, instance):
+        """تحديد مستوى الصعوبة بناءً على الزر المختار"""
+        if instance.text == "Easy (+, -)":
+            self.selected_difficulty = 1
+        elif instance.text == "Medium (×, ÷)":
+            self.selected_difficulty = 2
+        elif instance.text == "Hard (Mix)":
+            self.selected_difficulty = 3
+
+    def set_time_limit(self, instance, value):
+        """تحديد مستوى الوقت بناءً على شريط التمرير"""
+        time_values = {1: "5 seconds", 2: "10 seconds", 3: "20 seconds", 4: "30 seconds", 5: "No Time Limit"}
+        self.time_label.text = f"Time Limit: {time_values[int(value)]}"
+
+        if int(value) == 5:
+            self.selected_time_limit = None  # بلا وقت
+        else:
+            self.selected_time_limit = [5, 10, 20, 30][int(value) - 1]
+
+    def start_quiz(self, instance):
+        """الانتقال إلى شاشة الأسئلة وبدء اللعبة"""
+        quiz_screen = self.manager.get_screen("quiz")
+        quiz_screen.set_difficulty(self.selected_difficulty)
+        quiz_screen.set_time_limit(self.selected_time_limit)
+        quiz_screen.generate_question()
+        self.manager.current = "quiz"
+
+    def update_high_score(self, score):
+        """تحديث أعلى سكور"""
+        if score > self.high_score:
+            self.high_score = score
+            self.high_score_label.text = f"[b][color=#FFD700]⭐ High Score: {self.high_score} ⭐[/color][/b]"
+
+
+class QuizScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # التخطيط الرئيسي
+        self.layout = BoxLayout(orientation='vertical', spacing=20, padding=20)
+        self.add_widget(self.layout)
+
+        # إعداد خلفية ملونة
+        with self.canvas.before:
+            Color(0.1, 0.3, 0.5, 1)  # لون خلفية أزرق
+            self.bg_rect = Rectangle(size=self.size, pos=self.pos)
+        self.bind(size=self.update_bg, pos=self.update_bg)
+
+        # عرض السكور الحالي
+        self.score = 0
+        self.score_label = Label(
+            text=f"[b][color=#FFD700]Score: {self.score}[/color][/b]",
+            font_size='22sp',
+            size_hint=(1, 0.1),
+            markup=True,
+            halign="center",
+        )
+        self.layout.add_widget(self.score_label)
+
+        # عنوان السؤال
+        self.question_label = Label(
+            text="Question will appear here!",
+            font_size='28sp',
+            size_hint=(1, 0.2),
+            markup=True,
+            halign="center",
+        )
+        self.layout.add_widget(self.question_label)
+
+        # خيارات الإجابة
+        self.answer_layout = GridLayout(cols=2, spacing=10, size_hint=(1, 0.6))
+        self.buttons = []
+        for i in range(4):  # إنشاء 4 أزرار للإجابة
+            btn = Button(
+                text=f"Option {i+1}",
+                font_size='20sp',
+                background_normal='',
+                background_color=(0.3, 0.6, 0.9, 1),  # لون أزرق
+            )
+            btn.bind(on_press=self.check_answer)
+            self.buttons.append(btn)
+            self.answer_layout.add_widget(btn)
+        self.layout.add_widget(self.answer_layout)
+
+        # زر العودة إلى القائمة
+        self.back_button = Button(
+            text="Back to Menu",
+            font_size='18sp',
+            size_hint=(1, 0.1),
+            background_normal='',
+            background_color=(0.8, 0.3, 0.3, 1)  # لون أحمر
+        )
+        self.back_button.bind(on_press=self.go_back)
+        self.layout.add_widget(self.back_button)
+
+        self.correct_answer = None
+        self.difficulty = 1  # المستوى الافتراضي
+        self.time_limit = None  # الوقت الافتراضي
+
+    def update_bg(self, *args):
+        """تحديث حجم وموقع الخلفية"""
+        self.bg_rect.size = self.size
+        self.bg_rect.pos = self.pos
+
+    def set_difficulty(self, level):
+        """تحديد مستوى الصعوبة"""
+        self.difficulty = level
+
+    def set_time_limit(self, time_limit):
+        """تحديد الوقت"""
+        self.time_limit = time_limit
+
+    def generate_question(self):
+        """توليد سؤال جديد بناءً على مستوى الصعوبة"""
+        num1 = random.randint(1, 10)
+        num2 = random.randint(1, 10)
+
+        if self.difficulty == 1:  # Easy: جمع وطرح
+            operation = random.choice(['+', '-'])
+        elif self.difficulty == 2:  # Medium: ضرب وقسمة
+            operation = random.choice(['*', '/'])
+            if operation == '/':  # ضمان القسمة الصحيحة
+                num2 = random.randint(1, 10)
+                num1 = num2 * random.randint(1, 10)
+        else:  # Hard: خليط من جميع العمليات
+            operation = random.choice(['+', '-', '*', '/'])
+            if operation == '/':  # ضمان القسمة الصحيحة
+                num2 = random.randint(1, 10)
+                num1 = num2 * random.randint(1, 10)
+
+        # تحديد الإجابة الصحيحة
+        self.correct_answer = eval(f"{num1} {operation} {num2}")
+
+        # عرض السؤال مع الرموز المحسنة
+        operation_display = operation
+        if operation == '/':
+            operation_display = '÷'
+        elif operation == '*':
+            operation_display = '×'
+        self.question_label.text = f"[b][color=#FFFFFF]What is {num1} {operation_display} {num2}?[/color][/b]"
+
+        # توليد خيارات الإجابة
+        options = [self.correct_answer]
+        while len(options) < 4:
+            wrong_answer = self.correct_answer + random.randint(-10, 10)
+            if wrong_answer != self.correct_answer and wrong_answer not in options:
+                options.append(wrong_answer)
+
+        random.shuffle(options)
+        for i, btn in enumerate(self.buttons):
+            btn.text = str(round(options[i], 2))  # تقريب الإجابات
+
+    def check_answer(self, instance):
+        """التحقق من الإجابة"""
+        if float(instance.text) == self.correct_answer:
+            self.score += 10  # زيادة النقاط عند الإجابة الصحيحة
+            self.update_score()
+            self.generate_question()  # توليد سؤال جديد
+        else:
+            self.manager.current = "menu"  # العودة إلى القائمة الرئيسية عند الخطأ
+
+    def update_score(self):
+        """تحديث السكور المعروض"""
+        self.score_label.text = f"[b][color=#FFD700]Score: {self.score}[/color][/b]"
+
+    def go_back(self, instance):
+        """العودة إلى القائمة الرئيسية"""
+        self.manager.current = "menu"
+
+
+class MathQuizApp(App):
+    def build(self):
+        sm = ScreenManager()
+
+        # إضافة الشاشة الرئيسية
+        sm.add_widget(MainMenu(name="menu"))
+
+        # إضافة شاشة الأسئلة
+        sm.add_widget(QuizScreen(name="quiz"))
+
+        return sm
+
+
+MathQuizApp().run()
