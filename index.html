@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Mental Abilities Quiz</title>
     <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
@@ -68,22 +69,25 @@
 
         def display_question():
             question, correct_answer = generate_question()
-            Element("question").element.innerText = question
+            document.getElementById("question").innerText = question
             options = [correct_answer] + [random.randint(1, 100) for _ in range(3)]
             random.shuffle(options)
+            
+            # إعداد الأزرار بشكل صحيح
             options_html = "".join(
                 f'<button class="button" onclick="check_answer({option}, {correct_answer})">{option}</button>'
                 for option in options
             )
-            Element("options").element.innerHTML = options_html
+            document.getElementById("options").innerHTML = options_html
 
         def check_answer(selected, correct):
             if selected == correct:
-                Element("result").element.innerText = "Correct! 🎉"
+                document.getElementById("result").innerText = "Correct! 🎉"
                 display_question()
             else:
-                Element("result").element.innerText = "Wrong! Try again. ❌"
+                document.getElementById("result").innerText = "Wrong! Try again. ❌"
 
+        # بدء اللعبة بعرض السؤال الأول
         display_question()
     </py-script>
 </body>
