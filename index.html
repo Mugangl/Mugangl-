@@ -37,6 +37,7 @@
         #result {
             margin-top: 20px;
             font-size: 20px;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -61,33 +62,30 @@
                 answer = num1 - num2
             elif operation == "*":
                 answer = num1 * num2
-            else:  # ضمان القسمة الصحيحة
-                num2 = random.randint(1, 10)
-                num1 = num2 * random.randint(1, 10)
+            else:
+                while num2 == 0:  # ضمان القسمة على غير صفر
+                    num2 = random.randint(1, 10)
                 answer = num1 // num2
             return f"{num1} {operation} {num2}", answer
 
         def display_question():
             question, correct_answer = generate_question()
-            document.getElementById("question").innerText = question
+            Element("question").element.innerText = question
             options = [correct_answer] + [random.randint(1, 100) for _ in range(3)]
             random.shuffle(options)
-            
-            # إعداد الأزرار بشكل صحيح
             options_html = "".join(
                 f'<button class="button" onclick="check_answer({option}, {correct_answer})">{option}</button>'
                 for option in options
             )
-            document.getElementById("options").innerHTML = options_html
+            Element("options").element.innerHTML = options_html
 
         def check_answer(selected, correct):
             if selected == correct:
-                document.getElementById("result").innerText = "Correct! 🎉"
-                display_question()
+                Element("result").element.innerText = "Correct! 🎉"
+                display_question()  # عرض سؤال جديد بعد الإجابة الصحيحة
             else:
-                document.getElementById("result").innerText = "Wrong! Try again. ❌"
+                Element("result").element.innerText = "Wrong! Try again. ❌"  # عرض رسالة الخطأ
 
-        # بدء اللعبة بعرض السؤال الأول
         display_question()
     </py-script>
 </body>
